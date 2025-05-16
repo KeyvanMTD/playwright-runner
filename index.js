@@ -1,6 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const { exec } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 app.use(bodyParser.json());
@@ -9,18 +11,24 @@ app.post("/run", (req, res) => {
   const script = req.body.script;
 
   if (!script) {
-    return res.status(400).send("Missing script");
+    return res.status(400).json({ error: "Missing script" });
   }
 
-  const fs = require("fs");
-  const path = "./test.spec.ts";
+  const testPath = path.join(__dirname, "test.spec.ts");
 
-  fs.writeFileSync(path, script);
+  try {
+    fs.writeFileSync(testPath, script);
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to write test file" });
+  }
 
-  exec(`npx playwright test ${path}`, (error, stdout, stderr) => {
+  exec(`npx playwright test ${testPath}`, (error, stdout, stderr) => {
     if (error) {
-      return res.status(500).json({ error: stderr });
+      console.error("Playwright ERROR:", error);
+      console.error("stderr:", stderr);
+      return res.status(500).json({ error: stderr || error.message });
     }
+
     res.json({ output: stdout });
   });
 });
