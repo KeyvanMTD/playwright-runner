@@ -2,7 +2,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { exec } = require("child_process");
 const fs = require("fs");
-const path = require("path");
 
 const app = express();
 app.use(bodyParser.json());
@@ -14,7 +13,8 @@ app.post("/run", (req, res) => {
     return res.status(400).json({ error: "Missing script" });
   }
 
-  const testPath = path.join(__dirname, "test.spec.ts");
+  // ✅ Utilisation d’un chemin absolu compatible avec Render
+  const testPath = "/opt/render/project/src/test.spec.ts";
 
   try {
     fs.writeFileSync(testPath, script);
