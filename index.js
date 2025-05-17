@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { exec } = require("child_process");
 const fs = require("fs");
+const path = require("path");
 
 const app = express();
 app.use(bodyParser.json());
@@ -13,22 +14,17 @@ app.post("/run", (req, res) => {
     return res.status(400).json({ error: "Missing script" });
   }
 
-  // ✅ Utilisation d’un chemin absolu compatible avec Render
-  const testPath = "/opt/render/project/src/test.spec.ts";
+  // ➤ Chemin absolu obligatoire sur Render
+  const testPath = path.join(__dirname, "test.spec.ts");
 
-  try {
-    fs.writeFileSync(testPath, script);
-  } catch (err) {
-    return res.status(500).json({ error: "Failed to write test file" });
-  }
+  // ➤ Écriture du script dans test.spec.ts
+  fs.writeFileSync(testPath, script);
 
+  // ➤ Exécution Playwright
   exec(`npx playwright test ${testPath}`, (error, stdout, stderr) => {
     if (error) {
-      console.error("Playwright ERROR:", error);
-      console.error("stderr:", stderr);
-      return res.status(500).json({ error: stderr || error.message });
+      return res.status(500).json({ error: stderr });
     }
-
     res.json({ output: stdout });
   });
 });
