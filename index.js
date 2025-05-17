@@ -14,13 +14,13 @@ app.post("/run", (req, res) => {
     return res.status(400).json({ error: "Missing script" });
   }
 
-  // ➤ Chemin absolu obligatoire sur Render
-  const testPath = path.join(__dirname, "test.spec.ts");
+  // ➤ Chemin absolu requis par Render
+  const testPath = path.join(__dirname, "test.spec.js");
 
-  // ➤ Écriture du script dans test.spec.ts
+  // ➤ Écrit le script dans un fichier JS
   fs.writeFileSync(testPath, script);
 
-  // ➤ Exécution Playwright
+  // ➤ Exécution du test avec Playwright (JS)
   exec(`npx playwright test ${testPath} --project=default`, (error, stdout, stderr) => {
     if (error) {
       return res.status(500).json({ error: stderr });
