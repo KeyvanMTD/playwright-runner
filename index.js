@@ -14,16 +14,16 @@ app.post("/run", (req, res) => {
     return res.status(400).json({ error: "Missing script" });
   }
 
-  // ➤ Chemin absolu requis par Render
-  const testPath = path.join(__dirname, "test.spec.js");
-
-  // ➤ Écrit le script dans un fichier JS
+  // ➤ Écriture du script dans un fichier
+  const testPath = path.join(__dirname, "test.spec.ts");
   fs.writeFileSync(testPath, script);
 
-  // ➤ Exécution du test avec Playwright (JS)
-  exec(`npx playwright test ${testPath} --project=default`, (error, stdout, stderr) => {
+  // ➤ Exécution de Playwright en forçant le config + chemin projet
+  const command = `npx playwright test ${testPath} --config=${path.join(__dirname, "playwright.config.mjs")} --project=default`;
+
+  exec(command, { cwd: __dirname }, (error, stdout, stderr) => {
     if (error) {
-      return res.status(500).json({ error: stderr });
+      return res.status(500).json({ error: stderr || "Unknown error" });
     }
     res.json({ output: stdout });
   });
