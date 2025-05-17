@@ -21,7 +21,7 @@ app.post("/run", (req, res) => {
   fs.writeFileSync(testPath, script);
 
   // ➤ Exécution Playwright
-  exec(`npx playwright test ${testPath}`, (error, stdout, stderr) => {
+  exec(`npx playwright test ${testPath} --project=default`, (error, stdout, stderr) => {
     if (error) {
       return res.status(500).json({ error: stderr });
     }
